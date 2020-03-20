@@ -10,10 +10,7 @@ const PROXY = 'https://cors-anywhere.herokuapp.com/';
 const API_KEY = '04ce4107846b4638e05f5cfbd3fa3115'; 
 const CALENDAR = 'http://min-prices.aviasales.ru/calendar_preload';
 
-const FROM = 'SVX' // код Екатеринбугра
-const TO = 'KGD' // код Калининграда
-const WHEN = '2020-05-25'; // на 25 мая 2020
-const CALENDAR_PRELOAD = CALENDAR + `?origin=${FROM}&destination=${TO}&depart_date=${WHEN}&one_way=true` // строка запроса
+//const CALENDAR_PRELOAD = CALENDAR + `?origin=${FROM}&destination=${TO}&depart_date=${WHEN}&one_way=true` // строка запроса
 
 let city = [];
 
@@ -56,7 +53,7 @@ const showCities = (input, list) => {
     filterCity.forEach((item) => {
         const li = document.createElement('li');
         li.classList.add('dropdown__city')
-        li.textContent = item.name + item.code;
+        li.textContent = item.name;
         list.append(li);
     })
 }
@@ -69,6 +66,28 @@ const handleDropdown = (event, input, dropdown) => {
         dropdown.textContent = '';
     }
 }
+
+const renderCheapDay = (cheapTicket) => {
+    console.log(cheapTicket);
+    
+}
+
+const renderCheapYear = (cheapTicket) => {
+    console.log(cheapTicket);
+    
+}
+
+const renderCheap = (data, date) => {
+    const cheapTicketYear = JSON.parse(data).best_prices;
+    
+    const cheapTicketDay = cheapTicketYear.filter((item) => {
+        return date == item.depart_date
+    })
+    
+    renderCheapYear(cheapTicketYear);
+    renderCheapDay(cheapTicketDay);
+    
+};
 
 // INPUT FROM
 inputCitiesFrom.addEventListener('input', () => {
@@ -90,13 +109,27 @@ dropdownCitiesTo.addEventListener('click', (event) => {
     handleDropdown(event, inputCitiesTo, dropdownCitiesTo);
 });
 
+formSearch.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = {
+        from: city.find((item) => inputCitiesFrom.value === item.name).code,
+        to: city.find((item) => inputCitiesTo.value === item.name).code,
+        when: inputDateDepart.value
+    }
+
+    const requestData = '?depart_date' + formSearch.when +
+        '&origin=' + formData.from + 
+        '&destination=' + formData.to + 
+        '&one_way=true';
+    
+    getData(CALENDAR + requestData, (response) => {
+        renderCheap(response, formData.when)
+    });
+
+});
+
 // заносим в city данные о городах 
 getData(CITIES_API, (data) => {    
     city = JSON.parse(data).filter((item) => item.name);    
 })
-
-// домашнее задание - выводит в консоль информацию о рейсе Екатеринбург - Калининград на 25 мая
-getData(CALENDAR_PRELOAD, (data) => {
-    console.log(JSON.parse(data));
-    
-});
